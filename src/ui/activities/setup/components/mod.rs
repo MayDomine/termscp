@@ -3,6 +3,7 @@
 //! setup activity components
 
 use super::{CommonMsg, ConfigMsg, Msg, SshMsg, ThemeMsg, ViewLayout};
+use crate::config::keybindings::{KeyBindings, SetupKeyBindings};
 
 mod commons;
 mod config;
@@ -17,46 +18,74 @@ pub(super) use config::{
 pub(super) use ssh::{DelSshKeyPopup, SshHost, SshKeys, SshUsername};
 pub(super) use theme::*;
 use tui_realm_stdlib::Phantom;
-use tuirealm::event::{Event, Key, KeyEvent, KeyModifiers, NoUserEvent};
+use tuirealm::event::{Event, KeyEvent, NoUserEvent};
 use tuirealm::{Component, MockComponent};
+
+// -- helper function
+fn binding_matches(event: &KeyEvent, binding: &crate::config::keybindings::KeyBinding) -> bool {
+    event.code == binding.key && event.modifiers == binding.modifiers
+}
 
 // -- global listener
 
-#[derive(Default, MockComponent)]
+#[derive(MockComponent)]
 pub struct GlobalListener {
     component: Phantom,
+    setup_keys: SetupKeyBindings,
+}
+
+impl Default for GlobalListener {
+    fn default() -> Self {
+        Self {
+            component: Phantom::default(),
+            setup_keys: SetupKeyBindings::default(),
+        }
+    }
+}
+
+impl GlobalListener {
+    pub fn new(keybindings: Option<&KeyBindings>) -> Self {
+        Self {
+            component: Phantom::default(),
+            setup_keys: keybindings
+                .map(|k| k.setup.clone())
+                .unwrap_or_default(),
+        }
+    }
 }
 
 impl Component<Msg, NoUserEvent> for GlobalListener {
     fn on(&mut self, ev: Event<NoUserEvent>) -> Option<Msg> {
         match ev {
-            Event::Keyboard(KeyEvent {
-                code: Key::Esc | Key::Function(10),
-                ..
-            }) => Some(Msg::Common(CommonMsg::ShowQuitPopup)),
-            Event::Keyboard(KeyEvent { code: Key::Tab, .. }) => {
-                Some(Msg::Common(CommonMsg::ChangeLayout))
+            Event::Keyboard(ref key_ev) => {
+                // Quit
+                if binding_matches(key_ev, &self.setup_keys.quit)
+                    || binding_matches(key_ev, &self.setup_keys.quit_alt)
+                {
+                    return Some(Msg::Common(CommonMsg::ShowQuitPopup));
+                }
+                // Change tab
+                if binding_matches(key_ev, &self.setup_keys.change_tab) {
+                    return Some(Msg::Common(CommonMsg::ChangeLayout));
+                }
+                // Show help
+                if binding_matches(key_ev, &self.setup_keys.help)
+                    || binding_matches(key_ev, &self.setup_keys.help_alt)
+                {
+                    return Some(Msg::Common(CommonMsg::ShowKeybindings));
+                }
+                // Revert changes
+                if binding_matches(key_ev, &self.setup_keys.revert) {
+                    return Some(Msg::Common(CommonMsg::RevertChanges));
+                }
+                // Save
+                if binding_matches(key_ev, &self.setup_keys.save)
+                    || binding_matches(key_ev, &self.setup_keys.save_alt)
+                {
+                    return Some(Msg::Common(CommonMsg::ShowSavePopup));
+                }
+                None
             }
-            Event::Keyboard(KeyEvent {
-                code: Key::Char('h'),
-                modifiers: KeyModifiers::CONTROL,
-            }) => Some(Msg::Common(CommonMsg::ShowKeybindings)),
-            Event::Keyboard(KeyEvent {
-                code: Key::Function(1),
-                modifiers: KeyModifiers::NONE,
-            }) => Some(Msg::Common(CommonMsg::ShowKeybindings)),
-            Event::Keyboard(KeyEvent {
-                code: Key::Char('r'),
-                modifiers: KeyModifiers::CONTROL,
-            }) => Some(Msg::Common(CommonMsg::RevertChanges)),
-            Event::Keyboard(KeyEvent {
-                code: Key::Char('s'),
-                modifiers: KeyModifiers::CONTROL,
-            }) => Some(Msg::Common(CommonMsg::ShowSavePopup)),
-            Event::Keyboard(KeyEvent {
-                code: Key::Function(4),
-                modifiers: KeyModifiers::NONE,
-            }) => Some(Msg::Common(CommonMsg::ShowSavePopup)),
             Event::WindowResize(_, _) => Some(Msg::Common(CommonMsg::WindowResized)),
             _ => None,
         }

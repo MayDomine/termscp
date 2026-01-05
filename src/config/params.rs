@@ -78,7 +78,7 @@ impl Default for UserInterfaceConfig {
             show_hidden_files: false,
             check_for_updates: Some(true),
             prompt_on_file_replace: Some(true),
-            group_dirs: None,
+            group_dirs: Some(String::from("first")),
             file_fmt: None,
             remote_file_fmt: None,
             notifications: Some(true),

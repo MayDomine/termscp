@@ -29,6 +29,7 @@ use tempfile::TempDir;
 use tuirealm::{Application, EventListenerCfg, NoUserEvent};
 
 use super::{Activity, CROSSTERM_MAX_POLL, Context, ExitReason};
+use crate::config::keybindings::KeyBindings;
 use crate::config::themes::Theme;
 use crate::explorer::{FileExplorer, FileSorting};
 use crate::filetransfer::{
@@ -401,6 +402,11 @@ impl FileTransferActivity {
     /// Get a reference to `Theme`
     fn theme(&self) -> &Theme {
         self.context().theme_provider().theme()
+    }
+
+    /// Get a reference to `KeyBindings`
+    fn keybindings(&self) -> &KeyBindings {
+        self.context().keybindings().keybindings()
     }
 
     /// Map a function to fs watcher if any

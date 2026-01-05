@@ -23,6 +23,7 @@ pub use self::chmod::ChmodPopup;
 pub use self::goto::{ATTR_FILES, GotoPopup};
 use super::super::Browser;
 use super::{Msg, PendingActionMsg, TransferMsg, UiMsg};
+use crate::config::keybindings::KeyBindings;
 use crate::explorer::FileSorting;
 use crate::utils::fmt::fmt_time;
 
@@ -511,7 +512,13 @@ pub struct KeybindingsPopup {
 }
 
 impl KeybindingsPopup {
-    pub fn new(key_color: Color) -> Self {
+    pub fn new(key_color: Color, keybindings: Option<&KeyBindings>) -> Self {
+        let table = if let Some(kb) = keybindings {
+            Self::build_table_from_config(key_color, kb)
+        } else {
+            Self::build_default_table(key_color)
+        };
+
         Self {
             component: List::default()
                 .borders(Borders::default().modifiers(BorderType::Rounded))
@@ -520,140 +527,97 @@ impl KeybindingsPopup {
                 .highlighted_str("? ")
                 .title("Keybindings", Alignment::Center)
                 .rewind(true)
-                .rows(
-                    TableBuilder::default()
-                        .add_col(TextSpan::new("<ESC>").bold().fg(key_color))
-                        .add_col(TextSpan::from("             Disconnect"))
-                        .add_row()
-                        .add_col(TextSpan::new("<BACKSPACE>").bold().fg(key_color))
-                        .add_col(TextSpan::from("       Go to previous directory"))
-                        .add_row()
-                        .add_col(TextSpan::new("<TAB|RIGHT|LEFT>").bold().fg(key_color))
-                        .add_col(TextSpan::from("  Change explorer tab"))
-                        .add_row()
-                        .add_col(TextSpan::new("<UP/DOWN>").bold().fg(key_color))
-                        .add_col(TextSpan::from("         Move up/down in list"))
-                        .add_row()
-                        .add_col(TextSpan::new("<ENTER>").bold().fg(key_color))
-                        .add_col(TextSpan::from("           Enter directory"))
-                        .add_row()
-                        .add_col(TextSpan::new("<SPACE>").bold().fg(key_color))
-                        .add_col(TextSpan::from("           Upload/Download file"))
-                        .add_row()
-                        .add_col(TextSpan::new("<BACKTAB>").bold().fg(key_color))
-                        .add_col(TextSpan::from(
-                            "         Switch between explorer and log window",
-                        ))
-                        .add_row()
-                        .add_col(TextSpan::new("<A>").bold().fg(key_color))
-                        .add_col(TextSpan::from("               Toggle hidden files"))
-                        .add_row()
-                        .add_col(TextSpan::new("<B>").bold().fg(key_color))
-                        .add_col(TextSpan::from("               Change file sorting mode"))
-                        .add_row()
-                        .add_col(TextSpan::new("<C|F5>").bold().fg(key_color))
-                        .add_col(TextSpan::from("            Copy"))
-                        .add_row()
-                        .add_col(TextSpan::new("<D|F7>").bold().fg(key_color))
-                        .add_col(TextSpan::from("            Make directory"))
-                        .add_row()
-                        .add_col(TextSpan::new("<F>").bold().fg(key_color))
-                        .add_col(TextSpan::from("               Search files"))
-                        .add_row()
-                        .add_col(TextSpan::new("<G>").bold().fg(key_color))
-                        .add_col(TextSpan::from("               Go to path"))
-                        .add_row()
-                        .add_col(TextSpan::new("<H|F1>").bold().fg(key_color))
-                        .add_col(TextSpan::from("            Show help"))
-                        .add_row()
-                        .add_col(TextSpan::new("<I>").bold().fg(key_color))
-                        .add_col(TextSpan::from(
-                            "               Show info about selected file",
-                        ))
-                        .add_row()
-                        .add_col(TextSpan::new("<K>").bold().fg(key_color))
-                        .add_col(TextSpan::from(
-                            "               Create symlink pointing to the current selected entry",
-                        ))
-                        .add_row()
-                        .add_col(TextSpan::new("<L>").bold().fg(key_color))
-                        .add_col(TextSpan::from("               Reload directory content"))
-                        .add_row()
-                        .add_col(TextSpan::new("<M>").bold().fg(key_color))
-                        .add_col(TextSpan::from("               Select file"))
-                        .add_row()
-                        .add_col(TextSpan::new("<N>").bold().fg(key_color))
-                        .add_col(TextSpan::from("               Create new file"))
-                        .add_row()
-                        .add_col(TextSpan::new("<O|F4>").bold().fg(key_color))
-                        .add_col(TextSpan::from(
-                            "            Open text file with preferred editor",
-                        ))
-                        .add_row()
-                        .add_col(TextSpan::new("<P>").bold().fg(key_color))
-                        .add_col(TextSpan::from("               Toggle bottom panel"))
-                        .add_row()
-                        .add_col(TextSpan::new("<Q|F10>").bold().fg(key_color))
-                        .add_col(TextSpan::from("           Quit termscp"))
-                        .add_row()
-                        .add_col(TextSpan::new("<R|F6>").bold().fg(key_color))
-                        .add_col(TextSpan::from("            Rename file"))
-                        .add_row()
-                        .add_col(TextSpan::new("<S|F2>").bold().fg(key_color))
-                        .add_col(TextSpan::from("            Save file as"))
-                        .add_row()
-                        .add_col(TextSpan::new("<T>").bold().fg(key_color))
-                        .add_col(TextSpan::from("               Watch/unwatch file changes"))
-                        .add_row()
-                        .add_col(TextSpan::new("<U>").bold().fg(key_color))
-                        .add_col(TextSpan::from("               Go to parent directory"))
-                        .add_row()
-                        .add_col(TextSpan::new("<V|F3>").bold().fg(key_color))
-                        .add_col(TextSpan::from(
-                            "            Open file with default application for file type",
-                        ))
-                        .add_row()
-                        .add_col(TextSpan::new("<W>").bold().fg(key_color))
-                        .add_col(TextSpan::from(
-                            "               Open file with specified application",
-                        ))
-                        .add_row()
-                        .add_col(TextSpan::new("<X>").bold().fg(key_color))
-                        .add_col(TextSpan::from("               Execute shell command"))
-                        .add_row()
-                        .add_col(TextSpan::new("<Y>").bold().fg(key_color))
-                        .add_col(TextSpan::from(
-                            "               Toggle synchronized browsing",
-                        ))
-                        .add_row()
-                        .add_col(TextSpan::new("<Z>").bold().fg(key_color))
-                        .add_col(TextSpan::from("               Change file permissions"))
-                        .add_row()
-                        .add_col(TextSpan::new("</>").bold().fg(key_color))
-                        .add_col(TextSpan::from("               Filter files"))
-                        .add_row()
-                        .add_col(TextSpan::new("<DEL|F8|E>").bold().fg(key_color))
-                        .add_col(TextSpan::from("        Delete selected file"))
-                        .add_row()
-                        .add_col(TextSpan::new("<CTRL+A>").bold().fg(key_color))
-                        .add_col(TextSpan::from("          Select all files"))
-                        .add_row()
-                        .add_col(TextSpan::new("<ALT+A>").bold().fg(key_color))
-                        .add_col(TextSpan::from("          Deselect all files"))
-                        .add_row()
-                        .add_col(TextSpan::new("<CTRL+C>").bold().fg(key_color))
-                        .add_col(TextSpan::from("          Interrupt file transfer"))
-                        .add_row()
-                        .add_col(TextSpan::new("<CTRL+S>").bold().fg(key_color))
-                        .add_col(TextSpan::from(
-                            "          Get total path size of selected files",
-                        ))
-                        .add_row()
-                        .add_col(TextSpan::new("<CTRL+T>").bold().fg(key_color))
-                        .add_col(TextSpan::from("          Show watched paths"))
-                        .build(),
-                ),
+                .rows(table),
         }
+    }
+
+    /// Format a keybinding for display
+    fn fmt_key(binding: &crate::config::keybindings::KeyBinding) -> String {
+        format!("<{}>", binding.to_string().to_uppercase())
+    }
+
+    /// Build keybindings table from configuration
+    fn build_table_from_config(key_color: Color, kb: &KeyBindings) -> Vec<Vec<TextSpan>> {
+        let global = &kb.global;
+        let explorer = &kb.explorer;
+
+        // Helper to add a row
+        fn row(key: String, desc: &str, key_color: Color) -> Vec<TextSpan> {
+            vec![
+                TextSpan::new(format!("{:<16}", key)).bold().fg(key_color),
+                TextSpan::from(desc.to_string()),
+            ]
+        }
+
+        vec![
+            row(Self::fmt_key(&global.disconnect), "Disconnect", key_color),
+            row(Self::fmt_key(&explorer.go_back), "Go to previous directory", key_color),
+            row(Self::fmt_key(&explorer.change_panel), "Change explorer tab", key_color),
+            row(format!("<{}/{}>", Self::fmt_key(&explorer.move_up).trim_matches(|c| c == '<' || c == '>'), 
+                Self::fmt_key(&explorer.move_down).trim_matches(|c| c == '<' || c == '>')), "Move up/down in list", key_color),
+            row(Self::fmt_key(&explorer.enter_dir), "Enter directory", key_color),
+            row(Self::fmt_key(&explorer.transfer_file), "Upload/Download file", key_color),
+            row(Self::fmt_key(&explorer.go_to_parent), "Go to parent directory", key_color),
+            row(Self::fmt_key(&explorer.toggle_hidden), "Toggle hidden files", key_color),
+            row(Self::fmt_key(&explorer.sorting), "Change file sorting mode", key_color),
+            row(Self::fmt_key(&explorer.copy_file), "Copy", key_color),
+            row(Self::fmt_key(&explorer.mkdir), "Make directory", key_color),
+            row(Self::fmt_key(&explorer.fuzzy_search), "Search files", key_color),
+            row(Self::fmt_key(&explorer.goto_path), "Go to path", key_color),
+            row(Self::fmt_key(&global.help), "Show help", key_color),
+            row(Self::fmt_key(&explorer.file_info), "Show info about selected file", key_color),
+            row(Self::fmt_key(&explorer.symlink), "Create symlink", key_color),
+            row(Self::fmt_key(&explorer.reload_dir), "Reload directory content", key_color),
+            row(Self::fmt_key(&explorer.mark_file), "Select/mark file", key_color),
+            row(Self::fmt_key(&explorer.new_file), "Create new file", key_color),
+            row(Self::fmt_key(&explorer.edit_file), "Open text file with editor", key_color),
+            row(Self::fmt_key(&explorer.pending_queue), "Toggle bottom panel", key_color),
+            row(Self::fmt_key(&global.quit), "Quit termscp", key_color),
+            row(Self::fmt_key(&explorer.rename_file), "Rename file", key_color),
+            row(Self::fmt_key(&explorer.save_as), "Save file as", key_color),
+            row(Self::fmt_key(&explorer.watcher), "Watch/unwatch file changes", key_color),
+            row(Self::fmt_key(&explorer.open_file), "Open file with default app", key_color),
+            row(Self::fmt_key(&explorer.open_with), "Open file with specified app", key_color),
+            row(Self::fmt_key(&explorer.terminal), "Execute shell command", key_color),
+            row(Self::fmt_key(&explorer.sync_browsing), "Toggle synchronized browsing", key_color),
+            row(Self::fmt_key(&explorer.chmod), "Change file permissions", key_color),
+            row(Self::fmt_key(&explorer.filter), "Filter files", key_color),
+            row(Self::fmt_key(&explorer.delete_file), "Delete selected file", key_color),
+            row(Self::fmt_key(&explorer.mark_all), "Select all files", key_color),
+            row(Self::fmt_key(&explorer.unmark_all), "Deselect all files", key_color),
+            row(Self::fmt_key(&explorer.file_size), "Get total path size", key_color),
+            row(Self::fmt_key(&explorer.watched_paths), "Show watched paths", key_color),
+            row(String::from("<CTRL+C>"), "Interrupt file transfer", key_color),
+        ]
+    }
+
+    /// Build default keybindings table (fallback)
+    fn build_default_table(key_color: Color) -> Vec<Vec<TextSpan>> {
+        TableBuilder::default()
+            .add_col(TextSpan::new("<ESC>").bold().fg(key_color))
+            .add_col(TextSpan::from("             Disconnect"))
+            .add_row()
+            .add_col(TextSpan::new("<BACKSPACE>").bold().fg(key_color))
+            .add_col(TextSpan::from("       Go to previous directory"))
+            .add_row()
+            .add_col(TextSpan::new("<TAB>").bold().fg(key_color))
+            .add_col(TextSpan::from("             Change explorer tab"))
+            .add_row()
+            .add_col(TextSpan::new("<UP/DOWN>").bold().fg(key_color))
+            .add_col(TextSpan::from("         Move up/down in list"))
+            .add_row()
+            .add_col(TextSpan::new("<ENTER>").bold().fg(key_color))
+            .add_col(TextSpan::from("           Enter directory"))
+            .add_row()
+            .add_col(TextSpan::new("<SPACE>").bold().fg(key_color))
+            .add_col(TextSpan::from("           Upload/Download file"))
+            .add_row()
+            .add_col(TextSpan::new("<H|F1>").bold().fg(key_color))
+            .add_col(TextSpan::from("            Show help"))
+            .add_row()
+            .add_col(TextSpan::new("<Q|F10>").bold().fg(key_color))
+            .add_col(TextSpan::from("           Quit termscp"))
+            .build()
     }
 }
 

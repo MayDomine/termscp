@@ -18,6 +18,7 @@ use tuirealm::listener::EventListenerCfg;
 use tuirealm::{Application, NoUserEvent, Update};
 
 use super::{Activity, CROSSTERM_MAX_POLL, Context, ExitReason};
+use crate::config::keybindings::KeyBindings;
 use crate::config::themes::Theme;
 use crate::filetransfer::{FileTransferParams, FileTransferProtocol};
 use crate::system::bookmarks_client::BookmarksClient;
@@ -295,6 +296,11 @@ impl AuthActivity {
     /// Returns a reference to theme
     fn theme(&self) -> &Theme {
         self.context().theme_provider().theme()
+    }
+
+    /// Returns a reference to keybindings
+    fn keybindings(&self) -> &KeyBindings {
+        self.context().keybindings().keybindings()
     }
 
     /// Get current input mask to show

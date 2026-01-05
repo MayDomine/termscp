@@ -269,6 +269,10 @@ impl FileTransferActivity {
             .iter_files()
             .map(|x| {
                 let mut span = TextSpan::from(self.host_bridge().fmt_file(x));
+                // Use different color for directories
+                if x.is_dir() {
+                    span.fg = Color::LightCyan;
+                }
                 if self.host_bridge().enqueued().contains_key(x.path()) {
                     span.modifiers |=
                         TextModifiers::REVERSED | TextModifiers::UNDERLINED | TextModifiers::ITALIC;
@@ -391,6 +395,10 @@ impl FileTransferActivity {
             .iter_files()
             .map(|x| {
                 let mut span = TextSpan::from(self.remote().fmt_file(x));
+                // Use different color for directories
+                if x.is_dir() {
+                    span.fg = Color::LightCyan;
+                }
                 if self.remote().enqueued().contains_key(x.path()) {
                     span.modifiers |=
                         TextModifiers::REVERSED | TextModifiers::UNDERLINED | TextModifiers::ITALIC;
@@ -551,6 +559,10 @@ impl FileTransferActivity {
             .iter_files()
             .map(|x| {
                 let mut span = TextSpan::from(self.found().unwrap().fmt_file(x));
+                // Use different color for directories
+                if x.is_dir() {
+                    span.fg = Color::LightCyan;
+                }
                 if self.found().unwrap().enqueued().contains_key(x.path()) {
                     span.modifiers |=
                         TextModifiers::REVERSED | TextModifiers::UNDERLINED | TextModifiers::ITALIC;

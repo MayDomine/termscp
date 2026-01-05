@@ -20,6 +20,7 @@ use tuirealm::props::Color;
 use tuirealm::{Application, NoUserEvent, Update};
 
 use super::{Activity, CROSSTERM_MAX_POLL, Context, ExitReason};
+use crate::config::keybindings::KeyBindings;
 use crate::config::themes::Theme;
 use crate::system::config_client::ConfigClient;
 use crate::system::theme_provider::ThemeProvider;
@@ -300,6 +301,10 @@ impl SetupActivity {
 
     fn theme_provider(&mut self) -> &mut ThemeProvider {
         self.context_mut().theme_provider_mut()
+    }
+
+    fn keybindings(&self) -> &KeyBindings {
+        self.context().keybindings().keybindings()
     }
 
     /// Returns whether config has changed

@@ -1,13 +1,17 @@
 use std::path::{Path, PathBuf};
 
+use ssh2_config::{ParseRule, SshConfig};
+
 use super::Args;
-use crate::filetransfer::FileTransferParams;
+use crate::filetransfer::params::GenericProtocolParams;
+use crate::filetransfer::{FileTransferParams, FileTransferProtocol, ProtocolParams};
 use crate::utils;
 
 /// Address type
 enum AddrType {
     Address,
     Bookmark,
+    SshHost,
 }
 
 /// Args for remote connection
@@ -34,16 +38,13 @@ impl TryFrom<&Args> for RemoteArgs {
     fn try_from(args: &Args) -> Result<Self, Self::Error> {
         let mut remote_args = RemoteArgs::default();
         // validate arguments
-        match (args.bookmark.len(), args.positional.len()) {
-            (0, positional) if positional < 4 => Ok(()),
-            (1, positional) if positional < 3 => Ok(()),
-            (2, positional) if positional < 2 => Ok(()),
-            (_, _) => Err("Too many arguments".to_string()),
-        }?;
+        let total_hosts = args.bookmark.len() + args.ssh_host.len() + args.positional.len();
+        if total_hosts > 3 {
+            return Err("Too many arguments".to_string());
+        }
+
         // parse bookmark first
-        let last_item_index = (args.bookmark.len() + args.positional.len())
-            .checked_sub(1)
-            .unwrap_or_default();
+        let last_item_index = total_hosts.checked_sub(1).unwrap_or_default();
 
         let mut hosts = vec![];
 
@@ -51,6 +52,7 @@ impl TryFrom<&Args> for RemoteArgs {
             .bookmark
             .iter()
             .map(|x| (AddrType::Bookmark, x))
+            .chain(args.ssh_host.iter().map(|x| (AddrType::SshHost, x)))
             .chain(args.positional.iter().map(|x| (AddrType::Address, x)))
             .enumerate()
         {
@@ -67,6 +69,8 @@ impl TryFrom<&Args> for RemoteArgs {
                 AddrType::Address => Self::parse_remote_address(arg)
                     .map(|x| Remote::Host(HostParams::new(x, password)))?,
                 AddrType::Bookmark => Remote::Bookmark(BookmarkParams::new(arg, password.as_ref())),
+                AddrType::SshHost => Self::parse_ssh_host(arg)
+                    .map(|x| Remote::Host(HostParams::new(x, password)))?,
             };
 
             // set remote
@@ -89,6 +93,60 @@ impl RemoteArgs {
     /// Parse remote address
     fn parse_remote_address(remote: &str) -> Result<FileTransferParams, String> {
         utils::parser::parse_remote_opt(remote).map_err(|e| format!("Bad address option: {e}"))
+    }
+
+    /// Parse SSH config host alias (e.g., "hostA:/path/to/dir" or just "hostA")
+    fn parse_ssh_host(host_arg: &str) -> Result<FileTransferParams, String> {
+        // Parse host:path format
+        let (host_alias, remote_path) = if let Some(colon_pos) = host_arg.find(':') {
+            let alias = &host_arg[..colon_pos];
+            let path = &host_arg[colon_pos + 1..];
+            (alias, if path.is_empty() { None } else { Some(path) })
+        } else {
+            (host_arg, None)
+        };
+
+        // Load SSH config from default location
+        let ssh_config = SshConfig::parse_default_file(ParseRule::ALLOW_UNKNOWN_FIELDS)
+            .map_err(|e| format!("Could not parse SSH config: {e}"))?;
+
+        // Find the host
+        let host = ssh_config
+            .get_hosts()
+            .iter()
+            .find(|h| {
+                h.pattern
+                    .iter()
+                    .any(|p| !p.negated && p.pattern == host_alias)
+            })
+            .ok_or_else(|| format!("SSH host '{}' not found in ~/.ssh/config", host_alias))?;
+
+        // Extract connection parameters
+        let address = host
+            .params
+            .host_name
+            .as_deref()
+            .unwrap_or(host_alias)
+            .to_string();
+        let port = host.params.port.unwrap_or(22);
+        let username = host.params.user.clone();
+
+        let mut params = FileTransferParams::new(
+            FileTransferProtocol::Sftp,
+            ProtocolParams::Generic(
+                GenericProtocolParams::default()
+                    .address(address)
+                    .port(port)
+                    .username(username),
+            ),
+        );
+
+        // Set remote path if specified
+        if let Some(path) = remote_path {
+            params.remote_path = Some(PathBuf::from(path));
+        }
+
+        Ok(params)
     }
 }
 

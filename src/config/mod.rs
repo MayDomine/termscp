@@ -5,6 +5,7 @@
 // export
 
 pub mod bookmarks;
+pub mod keybindings;
 pub mod params;
 pub mod serialization;
 pub mod themes;

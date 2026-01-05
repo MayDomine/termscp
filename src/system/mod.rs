@@ -7,6 +7,7 @@ pub mod auto_update;
 pub mod bookmarks_client;
 pub mod config_client;
 pub mod environment;
+pub mod keybindings_provider;
 mod keys;
 pub mod logging;
 pub mod notifications;

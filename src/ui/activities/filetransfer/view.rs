@@ -5,7 +5,7 @@
 // locals
 // Ext
 use remotefs::fs::{File, UnixPex};
-use tuirealm::event::{Key, KeyEvent, KeyModifiers};
+use tuirealm::event::KeyEvent;
 use tuirealm::props::{PropPayload, PropValue, TextSpan};
 use tuirealm::ratatui::layout::{Constraint, Direction, Layout};
 use tuirealm::ratatui::widgets::Clear;
@@ -34,11 +34,12 @@ impl FileTransferActivity {
         let key_color = self.theme().misc_keys;
         let log_panel = self.theme().transfer_log_window;
         let log_background = self.theme().transfer_log_background;
+        let keybindings = self.keybindings().clone();
         assert!(
             self.app
                 .mount(
                     Id::FooterBar,
-                    Box::new(components::FooterBar::new(key_color)),
+                    Box::new(components::FooterBar::new(key_color, Some(&keybindings))),
                     vec![]
                 )
                 .is_ok()
@@ -52,7 +53,8 @@ impl FileTransferActivity {
                         &[],
                         local_explorer_background,
                         local_explorer_foreground,
-                        local_explorer_highlighted
+                        local_explorer_highlighted,
+                        Some(&keybindings)
                     )),
                     vec![]
                 )
@@ -67,7 +69,8 @@ impl FileTransferActivity {
                         &[],
                         remote_explorer_background,
                         remote_explorer_foreground,
-                        remote_explorer_highlighted
+                        remote_explorer_highlighted,
+                        Some(&keybindings)
                     )),
                     vec![]
                 )
@@ -629,6 +632,7 @@ impl FileTransferActivity {
                 self.theme().transfer_remote_explorer_highlighted,
             ),
         };
+        let keybindings = self.keybindings().clone();
 
         // Mount component
         assert!(
@@ -642,6 +646,7 @@ impl FileTransferActivity {
                             bg,
                             fg,
                             hg,
+                            Some(&keybindings),
                         ))
                     } else {
                         Box::new(components::ExplorerFind::new(
@@ -650,6 +655,7 @@ impl FileTransferActivity {
                             bg,
                             fg,
                             hg,
+                            Some(&keybindings),
                         ))
                     },
                     vec![],
@@ -1073,11 +1079,12 @@ impl FileTransferActivity {
     /// Mount help
     pub(super) fn mount_help(&mut self) {
         let key_color = self.theme().misc_keys;
+        let keybindings = self.keybindings().clone();
         assert!(
             self.app
                 .remount(
                     Id::KeybindingsPopup,
-                    Box::new(components::KeybindingsPopup::new(key_color)),
+                    Box::new(components::KeybindingsPopup::new(key_color, Some(&keybindings))),
                     vec![],
                 )
                 .is_ok()
@@ -1127,49 +1134,45 @@ impl FileTransferActivity {
     // -- global listener
 
     fn mount_global_listener(&mut self) {
+        use std::collections::HashSet;
+        use tuirealm::event::NoUserEvent;
+        
+        let keybindings = self.keybindings().clone();
+        let global_keys = &keybindings.global;
+        
+        // Collect all bindings, tracking which keys have been added
+        let bindings = [
+            &global_keys.disconnect,
+            &global_keys.help,
+            &global_keys.help_alt,
+            &global_keys.quit,
+            &global_keys.quit_alt,
+        ];
+        
+        let mut seen = HashSet::new();
+        let mut subs: Vec<Sub<Id, NoUserEvent>> = Vec::new();
+        
+        for binding in bindings {
+            let key = (binding.key, binding.modifiers);
+            if seen.insert(key) {
+                subs.push(Sub::new(
+                    SubEventClause::Keyboard(KeyEvent {
+                        code: binding.key,
+                        modifiers: binding.modifiers,
+                    }),
+                    Self::no_popup_mounted_clause(),
+                ));
+            }
+        }
+        
+        subs.push(Sub::new(SubEventClause::WindowResize, SubClause::Always));
+        
         assert!(
             self.app
                 .mount(
                     Id::GlobalListener,
-                    Box::<components::GlobalListener>::default(),
-                    vec![
-                        Sub::new(
-                            SubEventClause::Keyboard(KeyEvent {
-                                code: Key::Esc,
-                                modifiers: KeyModifiers::NONE,
-                            }),
-                            Self::no_popup_mounted_clause(),
-                        ),
-                        Sub::new(
-                            SubEventClause::Keyboard(KeyEvent {
-                                code: Key::Char('h'),
-                                modifiers: KeyModifiers::NONE,
-                            }),
-                            Self::no_popup_mounted_clause(),
-                        ),
-                        Sub::new(
-                            SubEventClause::Keyboard(KeyEvent {
-                                code: Key::Function(1),
-                                modifiers: KeyModifiers::NONE,
-                            }),
-                            Self::no_popup_mounted_clause(),
-                        ),
-                        Sub::new(
-                            SubEventClause::Keyboard(KeyEvent {
-                                code: Key::Function(10),
-                                modifiers: KeyModifiers::NONE,
-                            }),
-                            Self::no_popup_mounted_clause(),
-                        ),
-                        Sub::new(
-                            SubEventClause::Keyboard(KeyEvent {
-                                code: Key::Char('q'),
-                                modifiers: KeyModifiers::NONE,
-                            }),
-                            Self::no_popup_mounted_clause(),
-                        ),
-                        Sub::new(SubEventClause::WindowResize, SubClause::Always)
-                    ]
+                    Box::new(components::GlobalListener::new(Some(&keybindings))),
+                    subs
                 )
                 .is_ok()
         );

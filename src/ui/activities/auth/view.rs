@@ -9,6 +9,7 @@ use std::str::FromStr;
 use tuirealm::props::Color;
 use tuirealm::ratatui::layout::{Constraint, Direction, Layout};
 use tuirealm::ratatui::widgets::Clear;
+use tuirealm::event::NoUserEvent;
 use tuirealm::{State, StateValue, Sub, SubClause, SubEventClause};
 
 use super::{
@@ -1991,64 +1992,47 @@ impl AuthActivity {
     }
 
     fn init_global_listener(&mut self) {
-        use tuirealm::event::{Key, KeyEvent, KeyModifiers};
+        use std::collections::HashSet;
+        use tuirealm::event::KeyEvent;
+        
+        let keybindings = self.keybindings().clone();
+        let auth_keys = &keybindings.auth;
+        
+        // Collect all bindings, tracking which keys have been added
+        let bindings = [
+            &auth_keys.quit,
+            &auth_keys.quit_alt,
+            &auth_keys.setup,
+            &auth_keys.help,
+            &auth_keys.help_alt,
+            &auth_keys.release_notes,
+            &auth_keys.save_bookmark,
+        ];
+        
+        let mut seen = HashSet::new();
+        let mut subs: Vec<Sub<Id, NoUserEvent>> = Vec::new();
+        
+        for binding in bindings {
+            let key = (binding.key, binding.modifiers);
+            if seen.insert(key) {
+                subs.push(Sub::new(
+                    SubEventClause::Keyboard(KeyEvent {
+                        code: binding.key,
+                        modifiers: binding.modifiers,
+                    }),
+                    Self::no_popup_mounted_clause(),
+                ));
+            }
+        }
+        
+        subs.push(Sub::new(SubEventClause::WindowResize, SubClause::Always));
+        
         assert!(
             self.app
                 .mount(
                     Id::GlobalListener,
-                    Box::<components::GlobalListener>::default(),
-                    vec![
-                        Sub::new(
-                            SubEventClause::Keyboard(KeyEvent {
-                                code: Key::Esc,
-                                modifiers: KeyModifiers::NONE,
-                            }),
-                            Self::no_popup_mounted_clause(),
-                        ),
-                        Sub::new(
-                            SubEventClause::Keyboard(KeyEvent {
-                                code: Key::Function(10),
-                                modifiers: KeyModifiers::NONE,
-                            }),
-                            Self::no_popup_mounted_clause(),
-                        ),
-                        Sub::new(
-                            SubEventClause::Keyboard(KeyEvent {
-                                code: Key::Char('c'),
-                                modifiers: KeyModifiers::CONTROL,
-                            }),
-                            Self::no_popup_mounted_clause(),
-                        ),
-                        Sub::new(
-                            SubEventClause::Keyboard(KeyEvent {
-                                code: Key::Char('h'),
-                                modifiers: KeyModifiers::CONTROL,
-                            }),
-                            Self::no_popup_mounted_clause(),
-                        ),
-                        Sub::new(
-                            SubEventClause::Keyboard(KeyEvent {
-                                code: Key::Function(1),
-                                modifiers: KeyModifiers::NONE,
-                            }),
-                            Self::no_popup_mounted_clause(),
-                        ),
-                        Sub::new(
-                            SubEventClause::Keyboard(KeyEvent {
-                                code: Key::Char('r'),
-                                modifiers: KeyModifiers::CONTROL,
-                            }),
-                            Self::no_popup_mounted_clause(),
-                        ),
-                        Sub::new(
-                            SubEventClause::Keyboard(KeyEvent {
-                                code: Key::Char('s'),
-                                modifiers: KeyModifiers::CONTROL,
-                            }),
-                            Self::no_popup_mounted_clause(),
-                        ),
-                        Sub::new(SubEventClause::WindowResize, SubClause::Always)
-                    ]
+                    Box::new(components::GlobalListener::new(Some(&keybindings))),
+                    subs
                 )
                 .is_ok()
         );

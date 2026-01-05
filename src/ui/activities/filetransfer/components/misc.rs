@@ -7,6 +7,12 @@ use tuirealm::props::{Color, TextSpan};
 use tuirealm::{Component, Event, MockComponent, NoUserEvent};
 
 use super::Msg;
+use crate::config::keybindings::{KeyBinding, KeyBindings};
+
+/// Format a keybinding for display
+fn format_key(binding: &KeyBinding) -> String {
+    binding.to_string().to_uppercase()
+}
 
 #[derive(MockComponent)]
 pub struct FooterBar {
@@ -14,9 +20,39 @@ pub struct FooterBar {
 }
 
 impl FooterBar {
-    pub fn new(key_color: Color) -> Self {
-        Self {
-            component: Span::default().spans([
+    pub fn new(key_color: Color, keybindings: Option<&KeyBindings>) -> Self {
+        let spans = if let Some(kb) = keybindings {
+            let global = &kb.global;
+            let explorer = &kb.explorer;
+            vec![
+                TextSpan::from(format!("<{}>", format_key(&global.help))).bold().fg(key_color),
+                TextSpan::from(" Help "),
+                TextSpan::from(format!("<{}>", format_key(&explorer.change_panel))).bold().fg(key_color),
+                TextSpan::from(" Tab "),
+                TextSpan::from(format!("<{}>", format_key(&explorer.transfer_file))).bold().fg(key_color),
+                TextSpan::from(" Transfer "),
+                TextSpan::from(format!("<{}>", format_key(&explorer.enter_dir))).bold().fg(key_color),
+                TextSpan::from(" Enter "),
+                TextSpan::from(format!("<{}>", format_key(&explorer.save_as))).bold().fg(key_color),
+                TextSpan::from(" Save "),
+                TextSpan::from(format!("<{}>", format_key(&explorer.open_file))).bold().fg(key_color),
+                TextSpan::from(" Open "),
+                TextSpan::from(format!("<{}>", format_key(&explorer.edit_file))).bold().fg(key_color),
+                TextSpan::from(" Edit "),
+                TextSpan::from(format!("<{}>", format_key(&explorer.copy_file))).bold().fg(key_color),
+                TextSpan::from(" Copy "),
+                TextSpan::from(format!("<{}>", format_key(&explorer.rename_file))).bold().fg(key_color),
+                TextSpan::from(" Rename "),
+                TextSpan::from(format!("<{}>", format_key(&explorer.mkdir))).bold().fg(key_color),
+                TextSpan::from(" Mkdir "),
+                TextSpan::from(format!("<{}>", format_key(&explorer.delete_file))).bold().fg(key_color),
+                TextSpan::from(" Del "),
+                TextSpan::from(format!("<{}>", format_key(&global.quit))).bold().fg(key_color),
+                TextSpan::from(" Quit "),
+            ]
+        } else {
+            // Default fallback
+            vec![
                 TextSpan::from("<F1|H>").bold().fg(key_color),
                 TextSpan::from(" Help "),
                 TextSpan::from("<TAB>").bold().fg(key_color),
@@ -41,7 +77,11 @@ impl FooterBar {
                 TextSpan::from(" Delete "),
                 TextSpan::from("<F10|Q>").bold().fg(key_color),
                 TextSpan::from(" Quit "),
-            ]),
+            ]
+        };
+
+        Self {
+            component: Span::default().spans(spans),
         }
     }
 }

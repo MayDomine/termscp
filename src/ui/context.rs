@@ -9,6 +9,7 @@ use super::store::Store;
 use crate::filetransfer::{FileTransferParams, HostBridgeParams};
 use crate::system::bookmarks_client::BookmarksClient;
 use crate::system::config_client::ConfigClient;
+use crate::system::keybindings_provider::KeyBindingsProvider;
 use crate::system::theme_provider::ThemeProvider;
 
 /// Context holds data structures shared by the activities
@@ -17,6 +18,7 @@ pub struct Context {
     remote_params: Option<FileTransferParams>,
     bookmarks_client: Option<BookmarksClient>,
     config_client: ConfigClient,
+    keybindings_provider: KeyBindingsProvider,
     pub(crate) store: Store,
     pub(crate) terminal: TerminalBridge<CrosstermTerminalAdapter>,
     theme_provider: ThemeProvider,
@@ -28,6 +30,7 @@ impl Context {
     pub fn new(
         bookmarks_client: Option<BookmarksClient>,
         config_client: ConfigClient,
+        keybindings_provider: KeyBindingsProvider,
         theme_provider: ThemeProvider,
         error: Option<String>,
     ) -> Context {
@@ -38,6 +41,7 @@ impl Context {
             bookmarks_client,
             config_client,
             host_bridge_params: None,
+            keybindings_provider,
             remote_params: None,
             store: Store::init(),
             terminal,
@@ -86,6 +90,15 @@ impl Context {
 
     pub fn theme_provider_mut(&mut self) -> &mut ThemeProvider {
         &mut self.theme_provider
+    }
+
+    pub fn keybindings(&self) -> &KeyBindingsProvider {
+        &self.keybindings_provider
+    }
+
+    #[allow(dead_code)]
+    pub fn keybindings_mut(&mut self) -> &mut KeyBindingsProvider {
+        &mut self.keybindings_provider
     }
 
     pub fn terminal(&mut self) -> &mut TerminalBridge<CrosstermTerminalAdapter> {

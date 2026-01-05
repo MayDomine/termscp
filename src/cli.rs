@@ -47,6 +47,9 @@ pub struct Args {
     /// resolve address argument as a bookmark name
     #[argh(option, short = 'b')]
     pub bookmark: Vec<String>,
+    /// use SSH config host alias (from ~/.ssh/config)
+    #[argh(option, short = 'G')]
+    pub ssh_host: Vec<String>,
     /// enable TRACE log level
     #[argh(switch, short = 'D')]
     pub debug: bool,

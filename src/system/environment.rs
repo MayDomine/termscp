@@ -98,6 +98,29 @@ pub fn get_theme_path(config_dir: &Path) -> PathBuf {
     theme_file
 }
 
+/// Get paths for keybindings provider
+/// Returns: path of keybindings.toml
+/// Prefers ~/.config/termscp/keybindings.toml for cross-platform consistency
+pub fn get_keybindings_path(config_dir: &Path) -> PathBuf {
+    // First, check if ~/.config/termscp/keybindings.toml exists (preferred location)
+    if let Some(home) = dirs::home_dir() {
+        let xdg_path = home.join(".config").join("termscp").join("keybindings.toml");
+        if xdg_path.exists() {
+            return xdg_path;
+        }
+        // Also check if ~/.config/termscp/ directory exists (create config there)
+        let xdg_dir = home.join(".config").join("termscp");
+        if xdg_dir.exists() {
+            return xdg_path;
+        }
+    }
+    
+    // Fallback to platform-specific config directory
+    let mut keybindings_file: PathBuf = PathBuf::from(config_dir);
+    keybindings_file.push("keybindings.toml");
+    keybindings_file
+}
+
 #[cfg(test)]
 mod tests {
 

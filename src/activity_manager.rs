@@ -16,6 +16,7 @@ use crate::host::HostError;
 use crate::system::bookmarks_client::BookmarksClient;
 use crate::system::config_client::ConfigClient;
 use crate::system::environment;
+use crate::system::keybindings_provider::KeyBindingsProvider;
 use crate::system::sshkey_storage::SshKeyStorage;
 use crate::system::theme_provider::ThemeProvider;
 use crate::ui::activities::auth::AuthActivity;
@@ -67,7 +68,14 @@ impl ActivityManager {
         };
         let error = error_config.or(error_bookmark);
         let theme_provider: ThemeProvider = Self::init_theme_provider();
-        let ctx: Context = Context::new(bookmarks_client, config_client, theme_provider, error);
+        let keybindings_provider: KeyBindingsProvider = Self::init_keybindings_provider();
+        let ctx: Context = Context::new(
+            bookmarks_client,
+            config_client,
+            keybindings_provider,
+            theme_provider,
+            error,
+        );
         Ok(ActivityManager {
             context: Some(ctx),
             ticks,
@@ -510,6 +518,44 @@ impl ActivityManager {
                     err
                 );
                 ThemeProvider::degraded()
+            }
+        }
+    }
+
+    fn init_keybindings_provider() -> KeyBindingsProvider {
+        match environment::init_config_dir() {
+            Ok(config_dir) => {
+                match config_dir {
+                    Some(config_dir) => {
+                        // Get keybindings path
+                        let keybindings_path: PathBuf =
+                            environment::get_keybindings_path(config_dir.as_path());
+                        match KeyBindingsProvider::new(keybindings_path.as_path()) {
+                            Ok(provider) => provider,
+                            Err(err) => {
+                                error!(
+                                    "Could not initialize keybindings provider with file '{}': {}; using keybindings provider in degraded mode",
+                                    keybindings_path.display(),
+                                    err
+                                );
+                                KeyBindingsProvider::degraded()
+                            }
+                        }
+                    }
+                    None => {
+                        error!(
+                            "This system doesn't provide a configuration directory; using keybindings provider in degraded mode"
+                        );
+                        KeyBindingsProvider::degraded()
+                    }
+                }
+            }
+            Err(err) => {
+                error!(
+                    "Could not initialize configuration directory: {}; using keybindings provider in degraded mode",
+                    err
+                );
+                KeyBindingsProvider::degraded()
             }
         }
     }

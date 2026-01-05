@@ -1,0 +1,106 @@
+# termscp Vim-style Keybindings
+# 
+# Inspired by yazi, ranger, and other vim-based file managers
+#
+# Key format:
+#   - Single keys: "j", "k", "g", "G", etc.
+#   - Modifiers: "ctrl+a", "alt+j", "shift+up"
+#   - Function keys: "f1", "f2", etc.
+#   - Special keys: "enter", "space", "tab", "esc", "backspace", "delete"
+#   - Arrow keys: "up", "down", "left", "right"
+#   - Page keys: "pageup", "pagedown", "home", "end"
+#
+# To use this config:
+#   On macOS: cp vim.toml ~/Library/Application\ Support/termscp/keybindings.toml
+#   On Linux: cp vim.toml ~/.config/termscp/keybindings.toml
+#   Then restart termscp
+
+[global]
+# Quit application
+quit = "q"
+quit_alt = "Q"
+# Disconnect from remote
+disconnect = "esc"
+# Show help
+help = "?"
+help_alt = "f1"
+
+[explorer]
+# === Navigation (vim-style j/k) ===
+move_up = "k"
+move_down = "j"
+move_up_page = "ctrl+u"
+move_down_page = "ctrl+d"
+move_to_top = "g"
+move_to_bottom = "G"
+
+# h/l for parent/enter (like yazi/ranger)
+go_to_parent = "h"
+enter_dir = "l"
+go_back = "-"
+
+# Tab to switch panels
+change_panel = "tab"
+
+# === File Operations ===
+# Transfer file with Enter (primary action)
+transfer_file = "enter"
+
+# File manipulation
+copy_file = "c"
+rename_file = "r"
+delete_file = "d"
+mkdir = "a"
+new_file = "A"
+edit_file = "e"
+open_file = "o"
+open_with = "O"
+save_as = "S"
+chmod = "z"
+symlink = "K"
+reload_dir = "ctrl+r"
+
+# === Selection (space to mark, like ranger) ===
+mark_file = "space"
+mark_all = "V"
+unmark_all = "u"
+
+# === View Options ===
+toggle_hidden = "."
+file_info = "i"
+file_size = "I"
+sorting = "s"
+filter = "/"
+
+# === Search ===
+fuzzy_search = "f"
+goto_path = ":"
+
+# === Misc ===
+terminal = "!"
+sync_browsing = "y"
+watcher = "w"
+watched_paths = "W"
+pending_queue = "p"
+
+[auth]
+# Auth screen keybindings
+quit = "esc"
+quit_alt = "ctrl+q"
+setup = "ctrl+c"
+help = "?"
+help_alt = "f1"
+release_notes = "ctrl+n"
+save_bookmark = "ctrl+s"
+
+[setup]
+# Setup screen keybindings
+quit = "esc"
+quit_alt = "ctrl+q"
+change_tab = "tab"
+help = "?"
+help_alt = "f1"
+revert = "ctrl+r"
+save = "ctrl+s"
+save_alt = "ctrl+w"
+
