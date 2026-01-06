@@ -71,10 +71,10 @@ toggle_hidden = "."
 file_info = "i"
 file_size = "I"
 sorting = "s"
-filter = "/"
+filter = "F"
 
 # === Search ===
-fuzzy_search = "f"
+fuzzy_search = "/"
 goto_path = ":"
 
 # === Misc ===

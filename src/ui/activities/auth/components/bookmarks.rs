@@ -41,55 +41,97 @@ impl BookmarksList {
 impl Component<Msg, NoUserEvent> for BookmarksList {
     fn on(&mut self, ev: Event<NoUserEvent>) -> Option<Msg> {
         match ev {
+            // Down / j
             Event::Keyboard(KeyEvent {
                 code: Key::Down, ..
+            })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('j'),
+                ..
             }) => {
                 self.perform(Cmd::Move(Direction::Down));
                 Some(Msg::None)
             }
-            Event::Keyboard(KeyEvent { code: Key::Up, .. }) => {
+            // Up / k
+            Event::Keyboard(KeyEvent { code: Key::Up, .. })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('k'),
+                ..
+            }) => {
                 self.perform(Cmd::Move(Direction::Up));
                 Some(Msg::None)
             }
+            // PageDown / Ctrl+d
             Event::Keyboard(KeyEvent {
                 code: Key::PageDown,
                 ..
+            })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('d'),
+                modifiers: KeyModifiers::CONTROL,
             }) => {
                 self.perform(Cmd::Scroll(Direction::Down));
                 Some(Msg::None)
             }
+            // PageUp / Ctrl+u
             Event::Keyboard(KeyEvent {
                 code: Key::PageUp, ..
+            })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('u'),
+                modifiers: KeyModifiers::CONTROL,
             }) => {
                 self.perform(Cmd::Scroll(Direction::Up));
                 Some(Msg::None)
             }
+            // Home / g
             Event::Keyboard(KeyEvent {
                 code: Key::Home, ..
+            })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('g'),
+                ..
             }) => {
                 self.perform(Cmd::GoTo(Position::Begin));
                 Some(Msg::None)
             }
-            Event::Keyboard(KeyEvent { code: Key::End, .. }) => {
+            // End / G
+            Event::Keyboard(KeyEvent { code: Key::End, .. })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('G'),
+                ..
+            }) => {
                 self.perform(Cmd::GoTo(Position::End));
                 Some(Msg::None)
             }
+            // Enter / l - load bookmark
             Event::Keyboard(KeyEvent {
                 code: Key::Enter, ..
+            })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('l'),
+                ..
             }) => match self.state() {
                 State::One(StateValue::Usize(choice)) => {
                     Some(Msg::Form(FormMsg::LoadBookmark(choice)))
                 }
                 _ => Some(Msg::None),
             },
+            // Right - blur to recents
             Event::Keyboard(KeyEvent {
                 code: Key::Right, ..
             }) => Some(Msg::Ui(UiMsg::BookmarksListBlur)),
+            // Tab - blur tab
             Event::Keyboard(KeyEvent { code: Key::Tab, .. }) => {
                 Some(Msg::Ui(UiMsg::BookmarksTabBlur))
             }
+            // Delete / d - delete bookmark
             Event::Keyboard(KeyEvent {
                 code: Key::Delete, ..
+            })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('d'),
+                modifiers: KeyModifiers::NONE,
             }) => Some(Msg::Ui(UiMsg::ShowDeleteBookmarkPopup)),
             _ => None,
         }
@@ -126,55 +168,101 @@ impl RecentsList {
 impl Component<Msg, NoUserEvent> for RecentsList {
     fn on(&mut self, ev: Event<NoUserEvent>) -> Option<Msg> {
         match ev {
+            // Down / j
             Event::Keyboard(KeyEvent {
                 code: Key::Down, ..
+            })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('j'),
+                ..
             }) => {
                 self.perform(Cmd::Move(Direction::Down));
                 Some(Msg::None)
             }
-            Event::Keyboard(KeyEvent { code: Key::Up, .. }) => {
+            // Up / k
+            Event::Keyboard(KeyEvent { code: Key::Up, .. })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('k'),
+                ..
+            }) => {
                 self.perform(Cmd::Move(Direction::Up));
                 Some(Msg::None)
             }
+            // PageDown / Ctrl+d
             Event::Keyboard(KeyEvent {
                 code: Key::PageDown,
                 ..
+            })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('d'),
+                modifiers: KeyModifiers::CONTROL,
             }) => {
                 self.perform(Cmd::Scroll(Direction::Down));
                 Some(Msg::None)
             }
+            // PageUp / Ctrl+u
             Event::Keyboard(KeyEvent {
                 code: Key::PageUp, ..
+            })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('u'),
+                modifiers: KeyModifiers::CONTROL,
             }) => {
                 self.perform(Cmd::Scroll(Direction::Up));
                 Some(Msg::None)
             }
+            // Home / g
             Event::Keyboard(KeyEvent {
                 code: Key::Home, ..
+            })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('g'),
+                ..
             }) => {
                 self.perform(Cmd::GoTo(Position::Begin));
                 Some(Msg::None)
             }
-            Event::Keyboard(KeyEvent { code: Key::End, .. }) => {
+            // End / G
+            Event::Keyboard(KeyEvent { code: Key::End, .. })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('G'),
+                ..
+            }) => {
                 self.perform(Cmd::GoTo(Position::End));
                 Some(Msg::None)
             }
+            // Enter / l - load recent
             Event::Keyboard(KeyEvent {
                 code: Key::Enter, ..
+            })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('l'),
+                ..
             }) => match self.state() {
                 State::One(StateValue::Usize(choice)) => {
                     Some(Msg::Form(FormMsg::LoadRecent(choice)))
                 }
                 _ => Some(Msg::None),
             },
+            // Left / h - blur to bookmarks
             Event::Keyboard(KeyEvent {
                 code: Key::Left, ..
+            })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('h'),
+                ..
             }) => Some(Msg::Ui(UiMsg::RececentsListBlur)),
+            // Tab - blur tab
             Event::Keyboard(KeyEvent { code: Key::Tab, .. }) => {
                 Some(Msg::Ui(UiMsg::BookmarksTabBlur))
             }
+            // Delete / d - delete recent
             Event::Keyboard(KeyEvent {
                 code: Key::Delete, ..
+            })
+            | Event::Keyboard(KeyEvent {
+                code: Key::Char('d'),
+                modifiers: KeyModifiers::NONE,
             }) => Some(Msg::Ui(UiMsg::ShowDeleteRecentPopup)),
             _ => None,
         }

@@ -496,10 +496,10 @@ impl KeyBindings {
                 file_info: KeyBinding::simple(Key::Char('i')),
                 file_size: KeyBinding::simple(Key::Char('I')),
                 sorting: KeyBinding::simple(Key::Char('s')),
-                filter: KeyBinding::simple(Key::Char('/')),
+                filter: KeyBinding::simple(Key::Char('F')),
 
-                // Search (vim style)
-                fuzzy_search: KeyBinding::simple(Key::Char('f')),
+                // Search (vim style: / to search)
+                fuzzy_search: KeyBinding::simple(Key::Char('/')),
                 goto_path: KeyBinding::simple(Key::Char(':')),
 
                 // Misc
