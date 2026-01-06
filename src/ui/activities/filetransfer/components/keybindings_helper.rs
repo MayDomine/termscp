@@ -57,7 +57,8 @@ impl<'a> ExplorerKeyMatcher<'a> {
     }
 
     pub fn is_enter_dir(&self, ev: &KeyEvent) -> bool {
-        key_matches(ev, &self.explorer.enter_dir) || ev.code == Key::Enter
+        key_matches(ev, &self.explorer.enter_dir)
+            || key_matches(ev, &self.explorer.enter_dir_alt)
     }
 
     pub fn is_change_panel(&self, ev: &KeyEvent) -> bool {

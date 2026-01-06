@@ -243,6 +243,8 @@ pub struct ExplorerKeyBindings {
     pub go_to_parent: KeyBinding,
     pub go_back: KeyBinding,
     pub enter_dir: KeyBinding,
+    #[serde(default = "default_enter_dir_alt")]
+    pub enter_dir_alt: KeyBinding,
     pub change_panel: KeyBinding,
 
     // File operations
@@ -284,6 +286,12 @@ pub struct ExplorerKeyBindings {
     pub pending_queue: KeyBinding,
 }
 
+/// Default value for enter_dir_alt (used when field is missing in config)
+fn default_enter_dir_alt() -> KeyBinding {
+    // Default to 'l' as vim-style alternative, but Enter is the primary
+    KeyBinding::simple(Key::Char('l'))
+}
+
 impl Default for ExplorerKeyBindings {
     fn default() -> Self {
         Self {
@@ -297,6 +305,7 @@ impl Default for ExplorerKeyBindings {
             go_to_parent: KeyBinding::simple(Key::Char('u')),
             go_back: KeyBinding::simple(Key::Backspace),
             enter_dir: KeyBinding::simple(Key::Enter),
+            enter_dir_alt: default_enter_dir_alt(),
             change_panel: KeyBinding::simple(Key::Tab),
 
             // File operations
@@ -459,10 +468,11 @@ impl KeyBindings {
                 go_to_parent: KeyBinding::simple(Key::Char('h')),
                 go_back: KeyBinding::simple(Key::Char('-')),
                 enter_dir: KeyBinding::simple(Key::Char('l')),
+                enter_dir_alt: KeyBinding::simple(Key::Enter),
                 change_panel: KeyBinding::simple(Key::Tab),
 
                 // File operations (yazi/ranger style)
-                transfer_file: KeyBinding::simple(Key::Enter),
+                transfer_file: KeyBinding::simple(Key::Char('p')),
                 copy_file: KeyBinding::simple(Key::Char('c')),
                 rename_file: KeyBinding::simple(Key::Char('r')),
                 delete_file: KeyBinding::simple(Key::Char('d')),

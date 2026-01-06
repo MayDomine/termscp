@@ -1,0 +1,90 @@
+# termscp Default Keybindings
+#
+# This is the default keybinding configuration for termscp.
+# Copy this file to ~/.config/termscp/keybindings.toml to customize.
+#
+# Key format:
+#   - Single keys: "a", "b", "c", etc.
+#   - Modifiers: "ctrl+a", "alt+j", "shift+up"
+#   - Function keys: "f1", "f2", etc.
+#   - Special keys: "enter", "space", "tab", "esc", "backspace", "delete"
+#   - Arrow keys: "up", "down", "left", "right"
+#   - Page keys: "pageup", "pagedown", "home", "end"
+
+[global]
+quit = "q"
+quit_alt = "f10"
+disconnect = "esc"
+help = "h"
+help_alt = "f1"
+
+[explorer]
+# Navigation
+move_up = "up"
+move_down = "down"
+move_up_page = "pageup"
+move_down_page = "pagedown"
+move_to_top = "home"
+move_to_bottom = "end"
+go_to_parent = "u"
+go_back = "backspace"
+enter_dir = "enter"
+change_panel = "tab"
+
+# File operations
+transfer_file = "space"
+copy_file = "c"
+rename_file = "r"
+delete_file = "e"
+mkdir = "d"
+new_file = "n"
+edit_file = "o"
+open_file = "v"
+open_with = "w"
+save_as = "s"
+chmod = "z"
+symlink = "k"
+reload_dir = "l"
+
+# Selection
+mark_file = "m"
+mark_all = "ctrl+a"
+unmark_all = "alt+a"
+
+# View
+toggle_hidden = "a"
+file_info = "i"
+file_size = "ctrl+s"
+sorting = "b"
+filter = "/"
+
+# Search
+fuzzy_search = "f"
+goto_path = "g"
+
+# Misc
+terminal = "x"
+sync_browsing = "y"
+watcher = "t"
+watched_paths = "ctrl+t"
+pending_queue = "p"
+
+[auth]
+quit = "esc"
+quit_alt = "f10"
+setup = "ctrl+c"
+help = "ctrl+h"
+help_alt = "f1"
+release_notes = "ctrl+r"
+save_bookmark = "ctrl+s"
+
+[setup]
+quit = "esc"
+quit_alt = "f10"
+change_tab = "tab"
+help = "ctrl+h"
+help_alt = "f1"
+revert = "ctrl+r"
+save = "ctrl+s"
+save_alt = "f4"
+

@@ -34,17 +34,18 @@ move_down_page = "ctrl+d"
 move_to_top = "g"
 move_to_bottom = "G"
 
-# h/l for parent/enter (like yazi/ranger)
+# h/l/enter for parent/enter directory (like yazi/ranger)
 go_to_parent = "h"
 enter_dir = "l"
+enter_dir_alt = "enter"
 go_back = "-"
 
 # Tab to switch panels
 change_panel = "tab"
 
 # === File Operations ===
-# Transfer file with Enter (primary action)
-transfer_file = "enter"
+# Transfer file with p (put/paste semantic)
+transfer_file = "p"
 
 # File manipulation
 copy_file = "c"
@@ -78,10 +79,10 @@ goto_path = ":"
 
 # === Misc ===
 terminal = "!"
-sync_browsing = "y"
+sync_browsing = "Y"
 watcher = "w"
 watched_paths = "W"
-pending_queue = "p"
+pending_queue = "P"
 
 [auth]
 # Auth screen keybindings
